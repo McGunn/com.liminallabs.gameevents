@@ -3,18 +3,16 @@ using UnityEngine;
 namespace LiminalLabs.GameEvents.Demo
 {
     /// <summary>
-    /// A lamp lit or dark from a bool. Two wiring styles, same component:
-    /// assign <see cref="lampsEvent"/> and it subscribes itself in code, or leave it
-    /// empty and drive <see cref="SetLit"/> from a BoolGameEventListener's UnityEvent
-    /// — the designer path, no code involved. The demo shows one of each.
+    /// A lamp lit or dark from a bool, built on the typed
+    /// <see cref="GameEventReceiver{T, TEvent}"/>. Two wiring styles, one component:
+    /// assign the event and the base subscribes it, or leave the event empty and
+    /// drive <see cref="SetLit"/> from a Bool Event Listener's UnityEvent — the
+    /// zero-code designer path. The demo shows one of each.
     /// </summary>
     [RequireComponent(typeof(MeshRenderer))]
-    public class DemoLamp : MonoBehaviour
+    public class DemoLamp : GameEventReceiver<bool, BoolGameEvent>
     {
         private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
-
-        [SerializeField, Tooltip("Optional: subscribe directly to this event. Leave empty when a Bool Event Listener component drives SetLit instead.")]
-        private BoolGameEvent lampsEvent;
 
         [SerializeField] private bool startLit = true;
         [SerializeField] private Color litColor = new Color(1f, 0.85f, 0.35f);
@@ -35,15 +33,7 @@ namespace LiminalLabs.GameEvents.Demo
             Apply();
         }
 
-        void OnEnable()
-        {
-            if (lampsEvent != null) lampsEvent.Subscribe(SetLit);
-        }
-
-        void OnDisable()
-        {
-            if (lampsEvent != null) lampsEvent.Unsubscribe(SetLit);
-        }
+        protected override void OnEventRaised(bool value) => SetLit(value);
 
         /// <summary>Public so a BoolGameEventListener (or anything else) can drive it.</summary>
         public void SetLit(bool value)

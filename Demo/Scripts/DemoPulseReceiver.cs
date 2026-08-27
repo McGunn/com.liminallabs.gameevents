@@ -3,17 +3,15 @@ using UnityEngine;
 namespace LiminalLabs.GameEvents.Demo
 {
     /// <summary>
-    /// Reacts to a pulse event with a scale punch and a white flash — subscribed in
-    /// code, referencing only the event asset. The per-instance delay turns a row of
+    /// Reacts to a pulse event with a scale punch and a white flash — a
+    /// <see cref="GameEventReceiver"/>, so the subscription lifecycle is inherited
+    /// and this class is purely its reaction. The per-instance delay turns a row of
     /// receivers into a visible wave, making a single Raise() unmistakable.
     /// </summary>
     [RequireComponent(typeof(MeshRenderer))]
-    public class DemoPulseReceiver : MonoBehaviour
+    public class DemoPulseReceiver : GameEventReceiver
     {
         private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
-
-        [SerializeField, Tooltip("Event that makes this object jump.")]
-        private GameEvent pulseEvent;
 
         [SerializeField, Tooltip("Resting color of this receiver.")]
         private Color baseColor = new Color(0.25f, 0.55f, 0.85f);
@@ -38,17 +36,7 @@ namespace LiminalLabs.GameEvents.Demo
             ApplyVisual();
         }
 
-        void OnEnable()
-        {
-            if (pulseEvent != null) pulseEvent.Subscribe(OnPulse);
-        }
-
-        void OnDisable()
-        {
-            if (pulseEvent != null) pulseEvent.Unsubscribe(OnPulse);
-        }
-
-        private void OnPulse()
+        protected override void OnEventRaised()
         {
             pendingAt = Time.time + reactionDelay;
         }

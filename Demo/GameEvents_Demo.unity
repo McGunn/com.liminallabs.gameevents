@@ -1026,7 +1026,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56b6380779b540c08d210e8c6ffd4875, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  pulseEvent: {fileID: 11400000, guid: 1560ca7e7d72417486ece64dc2b75eb7, type: 2}
+  gameEvent: {fileID: 11400000, guid: 1560ca7e7d72417486ece64dc2b75eb7, type: 2}
   baseColor: {r: 0.25, g: 0.55, b: 0.85, a: 1}
   reactionDelay: 0.12
   punchScale: 1.45
@@ -1127,7 +1127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56b6380779b540c08d210e8c6ffd4875, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  pulseEvent: {fileID: 11400000, guid: 1560ca7e7d72417486ece64dc2b75eb7, type: 2}
+  gameEvent: {fileID: 11400000, guid: 1560ca7e7d72417486ece64dc2b75eb7, type: 2}
   baseColor: {r: 0.25, g: 0.55, b: 0.85, a: 1}
   reactionDelay: 0.06
   punchScale: 1.45
@@ -1228,7 +1228,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56b6380779b540c08d210e8c6ffd4875, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  pulseEvent: {fileID: 11400000, guid: 1560ca7e7d72417486ece64dc2b75eb7, type: 2}
+  gameEvent: {fileID: 11400000, guid: 1560ca7e7d72417486ece64dc2b75eb7, type: 2}
   baseColor: {r: 0.25, g: 0.55, b: 0.85, a: 1}
   reactionDelay: 0
   punchScale: 1.45
@@ -1329,7 +1329,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56b6380779b540c08d210e8c6ffd4875, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  pulseEvent: {fileID: 11400000, guid: 1560ca7e7d72417486ece64dc2b75eb7, type: 2}
+  gameEvent: {fileID: 11400000, guid: 1560ca7e7d72417486ece64dc2b75eb7, type: 2}
   baseColor: {r: 0.25, g: 0.55, b: 0.85, a: 1}
   reactionDelay: 0.06
   punchScale: 1.45
@@ -1430,7 +1430,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56b6380779b540c08d210e8c6ffd4875, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  pulseEvent: {fileID: 11400000, guid: 1560ca7e7d72417486ece64dc2b75eb7, type: 2}
+  gameEvent: {fileID: 11400000, guid: 1560ca7e7d72417486ece64dc2b75eb7, type: 2}
   baseColor: {r: 0.25, g: 0.55, b: 0.85, a: 1}
   reactionDelay: 0.12
   punchScale: 1.45
@@ -1531,7 +1531,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a5cf45ffb04df5b3bb00f8eb8f0a64, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  hueEvent: {fileID: 11400000, guid: 5b3d9937a8b043f9946aa00452f0ae97, type: 2}
+  gameEvent: {fileID: 11400000, guid: 5b3d9937a8b043f9946aa00452f0ae97, type: 2}
   hueOffset: 0
   startHue: 0.55
   blendSpeed: 4
@@ -1631,7 +1631,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a5cf45ffb04df5b3bb00f8eb8f0a64, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  hueEvent: {fileID: 11400000, guid: 5b3d9937a8b043f9946aa00452f0ae97, type: 2}
+  gameEvent: {fileID: 11400000, guid: 5b3d9937a8b043f9946aa00452f0ae97, type: 2}
   hueOffset: 0.08
   startHue: 0.55
   blendSpeed: 4
@@ -1731,7 +1731,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a5cf45ffb04df5b3bb00f8eb8f0a64, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  hueEvent: {fileID: 11400000, guid: 5b3d9937a8b043f9946aa00452f0ae97, type: 2}
+  gameEvent: {fileID: 11400000, guid: 5b3d9937a8b043f9946aa00452f0ae97, type: 2}
   hueOffset: 0.16
   startHue: 0.55
   blendSpeed: 4
@@ -1831,7 +1831,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a5cf45ffb04df5b3bb00f8eb8f0a64, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  hueEvent: {fileID: 11400000, guid: 5b3d9937a8b043f9946aa00452f0ae97, type: 2}
+  gameEvent: {fileID: 11400000, guid: 5b3d9937a8b043f9946aa00452f0ae97, type: 2}
   hueOffset: 0.24
   startHue: 0.55
   blendSpeed: 4
@@ -1931,7 +1931,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5dad64207b894440ad20eee7114364bf, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  lampsEvent: {fileID: 11400000, guid: 813cbe60d52b40f587fc5d287a4739d4, type: 2}
+  gameEvent: {fileID: 11400000, guid: 813cbe60d52b40f587fc5d287a4739d4, type: 2}
   startLit: 1
   litColor: {r: 1, g: 0.85, b: 0.35, a: 1}
   unlitColor: {r: 0.16, g: 0.16, b: 0.18, a: 1}
@@ -2032,7 +2032,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5dad64207b894440ad20eee7114364bf, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  lampsEvent: {fileID: 11400000, guid: 813cbe60d52b40f587fc5d287a4739d4, type: 2}
+  gameEvent: {fileID: 11400000, guid: 813cbe60d52b40f587fc5d287a4739d4, type: 2}
   startLit: 1
   litColor: {r: 1, g: 0.85, b: 0.35, a: 1}
   unlitColor: {r: 0.16, g: 0.16, b: 0.18, a: 1}
@@ -2134,7 +2134,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5dad64207b894440ad20eee7114364bf, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  lampsEvent: {fileID: 0}
+  gameEvent: {fileID: 0}
   startLit: 1
   litColor: {r: 1, g: 0.85, b: 0.35, a: 1}
   unlitColor: {r: 0.16, g: 0.16, b: 0.18, a: 1}

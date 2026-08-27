@@ -4,16 +4,13 @@ namespace LiminalLabs.GameEvents.Demo
 {
     /// <summary>
     /// Reacts to a float event by blending to the broadcast hue (plus a per-instance
-    /// offset, so a family of receivers forms a palette from one payload). Subscribed
-    /// in code, referencing only the event asset.
+    /// offset, so a family of receivers forms a palette from one payload). A typed
+    /// <see cref="GameEventReceiver{T, TEvent}"/> — subscription handled by the base.
     /// </summary>
     [RequireComponent(typeof(MeshRenderer))]
-    public class DemoHueReceiver : MonoBehaviour
+    public class DemoHueReceiver : GameEventReceiver<float, FloatGameEvent>
     {
         private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
-
-        [SerializeField, Tooltip("Event whose float payload (0–1) is the new hue.")]
-        private FloatGameEvent hueEvent;
 
         [SerializeField, Range(0f, 1f), Tooltip("Added to the broadcast hue so receivers differ.")]
         private float hueOffset = 0f;
@@ -33,17 +30,7 @@ namespace LiminalLabs.GameEvents.Demo
             Apply();
         }
 
-        void OnEnable()
-        {
-            if (hueEvent != null) hueEvent.Subscribe(OnHue);
-        }
-
-        void OnDisable()
-        {
-            if (hueEvent != null) hueEvent.Unsubscribe(OnHue);
-        }
-
-        private void OnHue(float hue)
+        protected override void OnEventRaised(float hue)
         {
             target = HueColor(hue + hueOffset);
         }

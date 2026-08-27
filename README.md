@@ -30,7 +30,31 @@ Requires `com.liminallabs.core`.
    timeline signals) by calling the asset's `Raise` method — or from the
    event's own inspector with the Raise button and test payload.
 
-Code-side listening is `Subscribe`/`Unsubscribe` with plain delegates.
+Code-side listening has two levels. For a component whose whole job is
+reacting to one event, inherit a receiver base and the subscription lifecycle
+is already done:
+
+```csharp
+public class HealthBar : GameEventReceiver<float, FloatGameEvent>
+{
+    protected override void OnEventRaised(float value) { /* react */ }
+}
+```
+
+(`GameEventReceiver` is the payload-less version; leaving the event field
+empty is valid when something else — like a listener component — drives the
+component directly.) For everything else, `Subscribe`/`Unsubscribe` with
+plain delegates works anywhere.
+
+## Picking events
+
+Every game-event field draws as a **searchable dropdown** of the project's
+events of that type — type to filter, hover for each event's description,
+ping button beside it — with a **Create New…** entry that creates the asset
+in place (defaulting next to its siblings) and assigns it immediately. No
+duplicating and renaming, no object-picker spelunking. Fields typed to a
+concrete event only offer that payload; fields typed to `GameEventBase`
+offer everything with payload labels.
 
 ## The raise contract
 
