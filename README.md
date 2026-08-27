@@ -60,8 +60,20 @@ deliberately no `CurrentValue`.
 - **Setup and Validation** rows: listener components with unassigned event
   slots, duplicate event names.
 
+## Demo
+
+`Demo/GameEvents_Demo.unity` — one broadcaster, sixteen reactors, zero scene
+references between them. Press **[1]** to pulse a wave through the cube row
+(it also fires on a timer), **[2]** to re-tint the sphere family from one
+float payload, **[3]** to toggle the lamps — two subscribe in code, the third
+is wired purely with a Bool Event Listener component. A world-space sign
+shows live raise/listener counts straight off the event assets, and the
+Events Board mirrors it all with full history. Select any object: its
+inspector references event assets only.
+
 ## Notes
 
 - Adding a project-specific payload type is two one-liner classes — copy any
   pair in `Runtime/PayloadEvents/`.
 - Everything resets correctly for Enter Play Mode without domain reload.
+- The demo scene's materials use URP; the runtime is render-pipeline-agnostic.
