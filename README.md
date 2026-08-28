@@ -86,7 +86,8 @@ deliberately no `CurrentValue`.
 
 ## Demo
 
-`Demo/GameEvents_Demo.unity` — one broadcaster, sixteen reactors, zero scene
+Import the **GameEvents Demo** sample from the Package Manager —
+one broadcaster, sixteen reactors, zero scene
 references between them. Press **[1]** to pulse a wave through the cube row
 (it also fires on a timer), **[2]** to re-tint the sphere family from one
 float payload, **[3]** to toggle the lamps — two subscribe in code, the third
