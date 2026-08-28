@@ -168,6 +168,28 @@ namespace LiminalLabs.GameEvents.Tests
         }
 
         [Test]
+        public void Catalog_ResolvesByStableId()
+        {
+            var a = Create<GameEvent>();
+            var b = Create<FloatGameEvent>();
+            typeof(GameEventBase).GetField("stableId", BindingFlags.NonPublic | BindingFlags.Instance)
+                .SetValue(a, "id-a");
+            typeof(GameEventBase).GetField("stableId", BindingFlags.NonPublic | BindingFlags.Instance)
+                .SetValue(b, "id-b");
+            Assert.AreEqual("id-a", a.StableId);
+
+            var catalog = Create<GameEventCatalog>();
+            typeof(GameEventCatalog).GetField("events", BindingFlags.NonPublic | BindingFlags.Instance)
+                .SetValue(catalog, new List<GameEventBase> { a, b, null });
+            catalog.RebuildLookup();
+
+            Assert.IsTrue(catalog.TryGet("id-b", out GameEventBase resolved));
+            Assert.AreEqual(b, resolved);
+            Assert.IsFalse(catalog.TryGet("missing", out _));
+            Assert.IsFalse(catalog.TryGet(null, out _));
+        }
+
+        [Test]
         public void RaiseBookkeeping_TracksCountAndListeners()
         {
             var gameEvent = Create<GameEvent>();

@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: Demo_Pulse
   m_EditorClassIdentifier: 
   description: Raised by the broadcaster ([1] or the auto timer). Every pulse receiver in the demo bounces - none of them know the broadcaster exists.
+  stableId: 03fc886b307141e6a10deb3013af5573

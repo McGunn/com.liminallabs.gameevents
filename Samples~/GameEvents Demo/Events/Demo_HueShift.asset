@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   description: Raised by [2] with a random hue 0-1. The sphere family re-tints from the one payload.
   debugValue: 0.5
+  stableId: dbff41a9f716484691d7a4c69ae39603

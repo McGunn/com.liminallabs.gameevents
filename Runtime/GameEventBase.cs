@@ -26,7 +26,29 @@ namespace LiminalLabs.GameEvents
         [SerializeField, TextArea(2, 4), Tooltip("What this event means and who is expected to raise/listen. Shown in the Events Board.")]
         private string description;
 
+        [SerializeField, HideInInspector]
+        private string stableId;
+
         public string Description => description;
+
+        /// <summary>
+        /// A GUID minted when the asset is created and never changed — the event's
+        /// identity for anything that outlives or leaves this process: network
+        /// bridges, save systems, analytics. Look events up by it at runtime through
+        /// a <see cref="GameEventCatalog"/>.
+        /// </summary>
+        public string StableId => stableId;
+
+#if UNITY_EDITOR
+        protected virtual void OnValidate()
+        {
+            if (string.IsNullOrEmpty(stableId))
+            {
+                stableId = Guid.NewGuid().ToString("N");
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+        }
+#endif
 
         /// <summary>Currently subscribed listeners.</summary>
         public abstract int ListenerCount { get; }

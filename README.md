@@ -96,6 +96,23 @@ shows live raise/listener counts straight off the event assets, and the
 Events Board mirrors it all with full history. Select any object: its
 inspector references event assets only.
 
+## Multiplayer
+
+Events are a **local-process** message bus by design — raising an event never
+touches the network. Bridging is deliberately easy, though: every event
+carries a **stable id** (a GUID minted at creation, shown in its inspector),
+and a **Game Event Catalog** asset resolves ids back to events at runtime.
+A network bridge is ~20 lines with any netcode:
+
+```csharp
+// send:    lever.Interacted -> SendToAll(gameEvent.StableId)
+// receive: if (catalog.TryGet(id, out var e)) { remoteRaise = true; ((GameEvent)e).Raise(); remoteRaise = false; }
+```
+
+The `remoteRaise` flag is the one trap: mark remote-originated raises so your
+bridge doesn't re-forward them in a loop. Stable ids also serve save systems
+and analytics; the Setup window flags missing or duplicated ids.
+
 ## Notes
 
 - Adding a project-specific payload type is two one-liner classes — copy any

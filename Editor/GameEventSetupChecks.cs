@@ -58,18 +58,19 @@ namespace LiminalLabs.GameEvents
         public void Run(LiminalSetupReport report)
         {
             var byName = new Dictionary<string, GameEventBase>();
-            int total = 0, duplicates = 0;
+            var byId = new Dictionary<string, GameEventBase>();
+            int total = 0, duplicates = 0, idIssues = 0;
 
             foreach (string guid in AssetDatabase.FindAssets("t:GameEventBase"))
             {
                 var gameEvent = AssetDatabase.LoadAssetAtPath<GameEventBase>(AssetDatabase.GUIDToAssetPath(guid));
                 if (gameEvent == null) continue;
                 total++;
+                GameEventBase captured = gameEvent;
 
-                if (byName.TryGetValue(gameEvent.name, out GameEventBase existing))
+                if (byName.TryGetValue(gameEvent.name, out _))
                 {
                     duplicates++;
-                    GameEventBase captured = gameEvent;
                     report.Warn($"Two events named '{gameEvent.name}'",
                         "Identical names are indistinguishable in object pickers — rename one.",
                         () => { Selection.activeObject = captured; EditorGUIUtility.PingObject(captured); }, "Select");
@@ -78,11 +79,30 @@ namespace LiminalLabs.GameEvents
                 {
                     byName[gameEvent.name] = gameEvent;
                 }
+
+                if (string.IsNullOrEmpty(gameEvent.StableId))
+                {
+                    idIssues++;
+                    report.Warn($"Event '{gameEvent.name}' has no stable id",
+                        "Select it once (OnValidate mints the id) and save the project — bridges and saves need it.",
+                        () => { Selection.activeObject = captured; EditorGUIUtility.PingObject(captured); }, "Select");
+                }
+                else if (byId.TryGetValue(gameEvent.StableId, out GameEventBase clash))
+                {
+                    idIssues++;
+                    report.Warn($"Events '{clash.name}' and '{gameEvent.name}' share a stable id",
+                        "Almost certainly a duplicated asset file. Clear the stableId field on one and let OnValidate mint a fresh id.",
+                        () => { Selection.activeObject = captured; EditorGUIUtility.PingObject(captured); }, "Select");
+                }
+                else
+                {
+                    byId[gameEvent.StableId] = gameEvent;
+                }
             }
 
-            if (duplicates == 0 && total > 0)
+            if (duplicates == 0 && idIssues == 0 && total > 0)
             {
-                report.Pass($"{total} game event(s), all uniquely named");
+                report.Pass($"{total} game event(s), all uniquely named with stable ids");
             }
         }
     }

@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   description: Raised by [3] with the new state. Two lamps subscribe in code; the third is driven by a Bool Event Listener component - zero code.
   debugValue: 1
+  stableId: 9bc6075803714333a03028f5ba2503c8

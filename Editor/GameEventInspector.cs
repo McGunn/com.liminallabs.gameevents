@@ -25,6 +25,15 @@ namespace LiminalLabs.GameEvents
             if (targets.Length != 1) return;
 
             var gameEvent = (GameEventBase)target;
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                GUILayout.Label($"Stable ID: {gameEvent.StableId}", EditorStyles.miniLabel);
+                if (GUILayout.Button("Copy", EditorStyles.miniButton, GUILayout.Width(44)))
+                {
+                    EditorGUIUtility.systemCopyBuffer = gameEvent.StableId;
+                }
+            }
             EditorGUILayout.Space(6);
 
             using (new EditorGUILayout.HorizontalScope())
