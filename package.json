@@ -1,11 +1,11 @@
 ﻿{
   "name": "com.liminallabs.gameevents",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "displayName": "Liminal Labs Game Events",
   "description": "ScriptableObject game events with AAA raise semantics: deterministic order, exception isolation, safe mid-raise mutation, recursion guard. Designer wiring via listener components and UnityEvents, plus the Events Board window with live activity, raise history, and project-wide reference scanning.",
   "unity": "6000.0",
   "author": { "name": "Liminal Labs" },
   "dependencies": {
-    "com.liminallabs.core": "0.1.0"
+    "com.liminallabs.core": "0.1.1"
   }
 }
