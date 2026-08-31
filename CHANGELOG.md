@@ -5,6 +5,28 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-08-31
+
+### Added
+
+- **`GameEventRaiser`** — the other half of a wire. The package shipped listeners in nine
+  flavours and nothing at all that raises, so every wire a designer made had to end at a
+  listener and begin in somebody's code. Fine for `PlayerDied`, which a health script raises;
+  useless for a switch opening a door, which is the archetypal thing a level designer wants and
+  had no component for.
+
+  It also left `IGameEventRaiserInfo` with no implementors, so the scene-view wiring tool could
+  only ever draw dashed lines — it had nothing that had declared itself a raiser, only things
+  that happened to hold a reference.
+
+  Raises when called (the default, so nothing fires by surprise), on enable, or on a trigger
+  entering or leaving, with an optional one-shot. `Raise()` is public and parameterless so a
+  UnityEvent on a button, an interaction or an animation event can drive it without knowing
+  what a game event is.
+
+  Payload-less on purpose: level wiring is a signal, not a value. A raiser per payload type
+  would be eight more components serving a case that wants none of them.
+
 ## [0.3.0] - 2026-08-31
 
 ### Added
