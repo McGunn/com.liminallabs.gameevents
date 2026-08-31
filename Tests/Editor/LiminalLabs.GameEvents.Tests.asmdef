@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "LiminalLabs.GameEvents",
+        "LiminalLabs.GameEvents.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

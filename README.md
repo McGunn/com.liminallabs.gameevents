@@ -56,6 +56,54 @@ duplicating and renaming, no object-picker spelunking. Fields typed to a
 concrete event only offer that payload; fields typed to `GameEventBase`
 offer everything with payload labels.
 
+## Scene events
+
+An event does not have to be a project asset. A **Scene Game Event** component hosts one that
+lives in the level instead — same `GameEvent` type, same raise contract, same listener list,
+stored in the scene file rather than in `Assets/`.
+
+Nothing else changes. A listener still declares `[SerializeField] GameEvent` and a designer
+drags either kind into it. There is no interface, no `UnityEngine.Object` field, and nothing in
+the package that has to ask which sort it is holding.
+
+**Why it is worth having.** A project asset per door per level is clutter that outlives the
+level, and it does not survive the thing level designers do most — duplicating a scene. Copy a
+level and its scene events copy with it, independently wired, because they live in the file
+that was copied. They also cannot accumulate the stale-subscriber bug an asset can: an asset
+persists between play sessions, a scene event is rebuilt every load.
+
+Use a **global asset** for things the whole game shares — `RedAlert`, `PlayerDied`,
+`AnySwitchActivated`. Use a **scene event** for wiring inside one level — this switch to that
+door. One raiser can do both, from fields of the same type, which is the point.
+
+### Wiring them in the scene view
+
+Pick the **Game Event Wiring** tool from the scene-view toolbar.
+
+- Select something and it draws only what *that* object is part of, one hop out. Nothing is
+  drawn otherwise — a level with fifty wires visible at once is a level you cannot see.
+- Raisers are warm, listeners are cool, and the channel is a point in space between them, so
+  many-to-many reads as a shape rather than an inference.
+- **Drag from one object to another to connect them.** If either end already has a channel, the
+  drag joins it; only when neither does is a new one created. That rule is what keeps
+  many-to-many from degenerating into a channel per pair.
+- A raiser that implements `IGameEventRaiserInfo` is drawn solid. One that merely holds a
+  serialized reference is drawn dashed, because "raises this" and "mentions this" are not the
+  same claim.
+- In play mode a wire lights up as the event actually fires. That is also the only way to see a
+  raiser that lives in code and declares nothing — a wire nobody drew, lighting up.
+
+### Verify it on your Unity version
+
+Scene events rest on one Unity behaviour: a ScriptableObject with no asset path, referenced by
+a scene component, is written into the scene file. That is a documented technique and it is
+still an assumption — and one that would fail *quietly*, giving you a session of working wires
+and nulls the next morning.
+
+So it is checked by doing it. Run **`Window > Liminal Labs > Game Events > Verify Scene Events
+Persist`**: it writes a scene with a hosted event and a listener pointing at it, reopens it from
+disk, and reports whether both survived. Worth running again after any Unity upgrade.
+
 ## The raise contract
 
 These semantics are fixed and pinned by the test suite:
@@ -76,9 +124,12 @@ deliberately no `CurrentValue`.
 ## Tooling
 
 - **Events Board** (`Window > Liminal Labs > Game Events`): every event in the
-  project with live listener and raise counts, a per-event raise history and
-  test-raise button, an all-events activity feed, and **Scan References** —
-  which scenes, prefabs, and assets point at each event, flagging orphans.
+  project **and every event hosted in the open scenes**, with live listener and
+  raise counts, a per-event raise history and test-raise button, an all-events
+  activity feed, and **Scan References** — which scenes, prefabs, and assets
+  point at each event, flagging orphans.
+- **Game Event Wiring** tool: see and make scene wiring in the scene view. See
+  above.
 - **Event inspector**: description, test payload, Raise button, live
   listeners, recent raises.
 - **Setup and Validation** rows: listener components with unassigned event

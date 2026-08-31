@@ -22,7 +22,8 @@ namespace LiminalLabs.GameEvents
             Rect field = EditorGUI.PrefixLabel(position, label);
             var current = property.objectReferenceValue as GameEventBase;
 
-            var dropRect = new Rect(field.x, field.y, field.width - 24f, field.height);
+            var dropRect = new Rect(field.x, field.y, field.width - 48f, field.height);
+            var sceneRect = new Rect(field.xMax - 46f, field.y, 22f, field.height);
             var pingRect = new Rect(field.xMax - 22f, field.y, 22f, field.height);
 
             string display = current != null ? current.name : "None";
@@ -39,6 +40,8 @@ namespace LiminalLabs.GameEvents
                     NiceTypeName).Show(dropRect);
             }
 
+            DrawSceneEvents(sceneRect, property);
+
             using (new EditorGUI.DisabledScope(current == null))
             {
                 if (GUI.Button(pingRect, new GUIContent("◎", "Ping the event asset"), EditorStyles.miniButton))
@@ -48,6 +51,57 @@ namespace LiminalLabs.GameEvents
             }
             EditorGUI.EndProperty();
         }
+
+        /// <summary>
+        /// A second, smaller way in: the events hosted in the open scenes.
+        ///
+        /// Separate from the main dropdown because that one is backed by the shared asset
+        /// dropdown, which searches the project - and a scene-stored event has no asset path,
+        /// so no amount of searching the project will ever find it. Rather than teach the
+        /// shared control about scenes, this offers them alongside.
+        ///
+        /// Disabled with a plain tooltip when the scene has none, so the button explains its
+        /// own emptiness instead of looking broken.
+        /// </summary>
+        private void DrawSceneEvents(Rect rect, SerializedProperty property)
+        {
+            hosts.Clear();
+            SceneGameEvent.Collect(hosts);
+
+            Type wanted = LiminalAssetDropdown.FieldAssetType(fieldInfo, typeof(GameEventBase));
+
+            int usable = 0;
+            for (int i = 0; i < hosts.Count; i++)
+                if (wanted.IsInstanceOfType(hosts[i].Channel)) usable++;
+
+            string tip = usable > 0
+                ? "Pick an event hosted in this scene"
+                : "No events of this type in the open scenes. Add a Scene Game Event to make one.";
+
+            using (new EditorGUI.DisabledScope(usable == 0))
+            {
+                if (!GUI.Button(rect, new GUIContent("⌂", tip), EditorStyles.miniButton)) return;
+            }
+
+            var menu = new GenericMenu();
+            SerializedObject owner = property.serializedObject;
+            string path = property.propertyPath;
+
+            for (int i = 0; i < hosts.Count; i++)
+            {
+                SceneGameEvent host = hosts[i];
+                if (!wanted.IsInstanceOfType(host.Channel)) continue;
+
+                string label = host.Channel.name + "  (" + host.gameObject.name + ")";
+                menu.AddItem(new GUIContent(label), false,
+                             () => LiminalAssetDropdown.Assign(owner, path, host.Channel));
+            }
+
+            menu.DropDown(rect);
+        }
+
+        private static readonly System.Collections.Generic.List<SceneGameEvent> hosts =
+            new System.Collections.Generic.List<SceneGameEvent>();
 
         internal static string NiceTypeName(Type type)
         {

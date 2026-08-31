@@ -14,6 +14,9 @@ namespace LiminalLabs.GameEvents
     /// </summary>
     public sealed class GameEventsBoardWindow : EditorWindow
     {
+        private readonly System.Collections.Generic.List<SceneGameEvent> sceneHosts =
+            new System.Collections.Generic.List<SceneGameEvent>();
+
         private const float ListWidth = 280f;
 
         private readonly List<GameEventBase> events = new List<GameEventBase>();
@@ -65,6 +68,18 @@ namespace LiminalLabs.GameEvents
         private void RefreshEvents()
         {
             events.Clear();
+            // Scene-hosted events first, because a level designer's own wiring is the thing
+            // they came here to find - and until now the Board could see only project assets,
+            // which meant it showed them exactly none of it.
+            sceneHosts.Clear();
+            SceneGameEvent.Collect(sceneHosts);
+
+            for (int i = 0; i < sceneHosts.Count; i++)
+            {
+                GameEventBase hosted = sceneHosts[i].Channel;
+                if (hosted != null && !events.Contains(hosted)) events.Add(hosted);
+            }
+
             foreach (string guid in AssetDatabase.FindAssets("t:GameEventBase"))
             {
                 var gameEvent = AssetDatabase.LoadAssetAtPath<GameEventBase>(AssetDatabase.GUIDToAssetPath(guid));
