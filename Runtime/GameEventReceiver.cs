@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,11 +10,17 @@ namespace LiminalLabs.GameEvents
     /// enable, unsubscribe on disable, null-event tolerated) is owned here so no
     /// component ever hand-rolls it or leaks a dangling listener. The designer-first
     /// counterpart is the <see cref="GameEventListener"/> component.
+    ///
+    /// The subscription uses one delegate, built on the first enable and kept, so a
+    /// receiver on a pooled object costs nothing to switch on and off.
     /// </summary>
     public abstract class GameEventReceiver : MonoBehaviour, IGameEventListenerInfo
     {
         [SerializeField, Tooltip("Event this component reacts to.")]
         private GameEvent gameEvent;
+
+        private Action handler;
+        private GameEvent subscribedTo;
 
         /// <summary>The observed event (may be null).</summary>
         protected GameEvent Event => gameEvent;
@@ -21,13 +28,19 @@ namespace LiminalLabs.GameEvents
         /// <summary>Override to add enable logic; always call base — it subscribes.</summary>
         protected virtual void OnEnable()
         {
-            if (gameEvent != null) gameEvent.Subscribe(OnEventRaised);
+            if (gameEvent == null) return;
+
+            subscribedTo = gameEvent;
+            subscribedTo.Subscribe(handler ?? (handler = OnEventRaised));
         }
 
         /// <summary>Override to add disable logic; always call base — it unsubscribes.</summary>
         protected virtual void OnDisable()
         {
-            if (gameEvent != null) gameEvent.Unsubscribe(OnEventRaised);
+            if (subscribedTo == null || handler == null) return;
+
+            subscribedTo.Unsubscribe(handler);
+            subscribedTo = null;
         }
 
         /// <summary>Called whenever the event is raised (while enabled).</summary>
@@ -55,19 +68,28 @@ namespace LiminalLabs.GameEvents
         [SerializeField, Tooltip("Event this component reacts to. May be left empty when something else (e.g. a listener component) drives this component directly.")]
         private TEvent gameEvent;
 
+        private Action<T> handler;
+        private TEvent subscribedTo;
+
         /// <summary>The observed event (may be null).</summary>
         protected TEvent Event => gameEvent;
 
         /// <summary>Override to add enable logic; always call base — it subscribes.</summary>
         protected virtual void OnEnable()
         {
-            if (gameEvent != null) gameEvent.Subscribe(OnEventRaised);
+            if (gameEvent == null) return;
+
+            subscribedTo = gameEvent;
+            subscribedTo.Subscribe(handler ?? (handler = OnEventRaised));
         }
 
         /// <summary>Override to add disable logic; always call base — it unsubscribes.</summary>
         protected virtual void OnDisable()
         {
-            if (gameEvent != null) gameEvent.Unsubscribe(OnEventRaised);
+            if (subscribedTo == null || handler == null) return;
+
+            subscribedTo.Unsubscribe(handler);
+            subscribedTo = null;
         }
 
         /// <summary>Called with the payload whenever the event is raised (while enabled).</summary>

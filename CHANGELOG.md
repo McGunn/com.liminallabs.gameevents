@@ -5,6 +5,35 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-09-01
+
+### Changed
+
+- **Listener and receiver components allocate nothing to enable or disable.**
+  `GameEventListener` rows, the typed listeners and both `GameEventReceiver` bases subscribed
+  with a method group, which is a new delegate every time it is written - two allocations per
+  enable/disable cycle, which on a pooled object is every spawn. Each now builds its delegate
+  once and keeps it, and unsubscribes from the event it actually joined rather than whatever
+  the field says at disable time.
+- **`GameEventRaiser` set to `Enabled` fires its first raise from `Start`.** A scene enables
+  its objects in an order nobody controls, so a raise from `OnEnable` could go out before a
+  listener two objects down had subscribed - and an event with no listeners is not an error,
+  so nothing said so. `Start` runs after every object's `OnEnable`, so the first raise reaches
+  the whole level. Being re-enabled later fires at once, as before.
+- **A scene event host knows in a build whether it owns its event.** `IsSceneStored` was
+  answered off the asset database, which a player does not have, so a player treated every
+  hosted event as a project asset and the runtime release in `OnDestroy` never ran. The host
+  now records ownership when it adopts an event, `OnValidate` keeps the record true in the
+  editor, and a player reads it. Save a scene once after upgrading so the record is stored.
+- **An adopted scene event gets its stable id on adoption**, not on its first inspection. An
+  event made in code is inspected when someone happens to click it; a bridge or a save that
+  named it before then had nothing to name it by. `OnValidate` and `Adopt` share one
+  `EnsureStableId`.
+
+### Tests
+
+- 26 (was 25): an adopted event has a stable id.
+
 ## [0.4.0] - 2026-08-31
 
 ### Added

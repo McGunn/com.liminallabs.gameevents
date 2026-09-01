@@ -40,15 +40,25 @@ namespace LiminalLabs.GameEvents
         public string StableId => stableId;
 
 #if UNITY_EDITOR
-        protected virtual void OnValidate()
-        {
-            if (string.IsNullOrEmpty(stableId))
-            {
-                stableId = Guid.NewGuid().ToString("N");
-                UnityEditor.EditorUtility.SetDirty(this);
-            }
-        }
+        protected virtual void OnValidate() => EnsureStableId();
 #endif
+
+        /// <summary>
+        /// Mints the stable id if there is none. Editor-only in effect: a player cannot mint
+        /// an id that would survive it, and an asset that reaches a player without one is
+        /// what the setup checks exist to catch. Called by OnValidate for assets, and by a
+        /// <see cref="SceneGameEvent"/> adopting an event made in code, which OnValidate may
+        /// never see.
+        /// </summary>
+        internal void EnsureStableId()
+        {
+#if UNITY_EDITOR
+            if (!string.IsNullOrEmpty(stableId)) return;
+
+            stableId = Guid.NewGuid().ToString("N");
+            UnityEditor.EditorUtility.SetDirty(this);
+#endif
+        }
 
         /// <summary>Currently subscribed listeners.</summary>
         public abstract int ListenerCount { get; }

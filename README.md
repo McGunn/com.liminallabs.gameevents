@@ -70,7 +70,9 @@ the package that has to ask which sort it is holding.
 level, and it does not survive the thing level designers do most — duplicating a scene. Copy a
 level and its scene events copy with it, independently wired, because they live in the file
 that was copied. They also cannot accumulate the stale-subscriber bug an asset can: an asset
-persists between play sessions, a scene event is rebuilt every load.
+persists between play sessions, a scene event is rebuilt every load. A scene event gets its
+stable id the moment it is created, and its host knows - in a build too - that it owns it, so a
+host destroyed mid-session releases its event.
 
 Use a **global asset** for things the whole game shares — `RedAlert`, `PlayerDied`,
 `AnySwitchActivated`. Use a **scene event** for wiring inside one level — this switch to that
@@ -168,5 +170,10 @@ and analytics; the Setup window flags missing or duplicated ids.
 
 - Adding a project-specific payload type is two one-liner classes — copy any
   pair in `Runtime/PayloadEvents/`.
+- Listener and receiver components build their delegate once; enabling and
+  disabling them allocates nothing, so they are safe on pooled objects.
+- A `GameEventRaiser` set to *Enabled* fires its first raise from `Start`, after
+  every object in the scene has enabled, so the listeners in the same level all
+  hear it. A re-enable later fires at once.
 - Everything resets correctly for Enter Play Mode without domain reload.
 - The demo scene's materials use URP; the runtime is render-pipeline-agnostic.

@@ -12,7 +12,9 @@ namespace LiminalLabs.GameEvents
         Called = 0,
 
         /// <summary>As it becomes enabled. For a trigger that arms something the moment a
-        /// level loads.</summary>
+        /// level loads. The first time, it waits until the scene has finished enabling
+        /// everything, so the listeners in the same level are all there to hear it;
+        /// being re-enabled later fires at once.</summary>
         Enabled = 1,
 
         /// <summary>When something enters its trigger collider.</summary>
@@ -59,6 +61,7 @@ namespace LiminalLabs.GameEvents
         private bool once;
 
         private bool spent;
+        private bool started;
 
         /// <summary>What this raises. Null until something is assigned.</summary>
         public GameEvent Event => gameEvent;
@@ -93,9 +96,26 @@ namespace LiminalLabs.GameEvents
             return 0;
         }
 
+        /// <summary>
+        /// The first <see cref="RaiseWhen.Enabled"/> raise happens here, not in OnEnable.
+        ///
+        /// A scene enables its objects in an order nobody controls, so a raise from OnEnable
+        /// can go out before the listener two objects down has subscribed — and the switch
+        /// that arms on load opens a door that was not yet listening, with nothing logged,
+        /// because an event with no listeners is not an error. Start runs after every object
+        /// in the scene has had its OnEnable, so the first raise reaches all of them. Only the
+        /// first: a component re-enabled mid-session is enabled into a world that is already
+        /// running, and fires at once.
+        /// </summary>
+        private void Start()
+        {
+            started = true;
+            if (when == RaiseWhen.Enabled) Raise();
+        }
+
         private void OnEnable()
         {
-            if (when == RaiseWhen.Enabled) Raise();
+            if (started && when == RaiseWhen.Enabled) Raise();
         }
 
         private void OnTriggerEnter(Collider other)

@@ -67,6 +67,20 @@ namespace LiminalLabs.GameEvents.Tests
                           "an instance with no asset path is stored in the scene, not the project");
         }
 
+        /// <summary>An event made in code has no inspector visit to mint its id, and a bridge or
+        /// a save that names events needs one from the moment it exists.</summary>
+        [Test]
+        public void AnAdoptedEventHasAStableId()
+        {
+            SceneGameEvent host = Object_("Host").AddComponent<SceneGameEvent>();
+            GameEvent channel = Event<GameEvent>("NorthDoor");
+
+            host.Adopt(channel);
+
+            Assert.IsFalse(string.IsNullOrEmpty(channel.StableId),
+                           "adopting mints the id an asset would get from its first inspection");
+        }
+
         /// <summary>The only reliable way to tell a scene event from an asset is the absence of
         /// an asset path - the types are identical on purpose.</summary>
         [Test]

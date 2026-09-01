@@ -45,6 +45,15 @@ namespace LiminalLabs.GameEvents
                                                  "Board and when the scene view draws it.")]
         private string notes;
 
+        // Whether the channel is stored in this scene, written down at authoring time.
+        //
+        // The editor can always tell (a scene-stored event has no asset path) and a player
+        // never can, so this is decided where the knowledge exists and carried into the
+        // build. Without it a player would treat every hosted event as a project asset and
+        // never release one - the runtime half of OnDestroy would be editor-only in practice.
+        [SerializeField, HideInInspector]
+        private bool ownsChannel;
+
         /// <summary>The event this hosts. Null until one is created, which the inspector does
         /// on your behalf.</summary>
         public GameEventBase Channel => channel;
@@ -58,17 +67,30 @@ namespace LiminalLabs.GameEvents
         /// <summary>
         /// Whether the event this holds lives in a scene rather than in the project.
         ///
-        /// <b>The distinction that matters everywhere else.</b> A scene-stored ScriptableObject
-        /// has no asset path, and that is the only reliable way to tell the two apart at
-        /// runtime — the type is identical by design.
+        /// <b>The distinction that matters everywhere else.</b> In the editor it is read off the
+        /// asset database - a scene-stored ScriptableObject has no asset path, and that is the
+        /// only reliable way to tell the two apart, the type being identical by design. A player
+        /// has no asset database, so it reads what the editor wrote down when the event was
+        /// adopted or the scene was last validated.
         /// </summary>
-        public bool IsSceneStored => IsSceneEvent(channel);
+        public bool IsSceneStored
+        {
+            get
+            {
+#if UNITY_EDITOR
+                return IsSceneEvent(channel);
+#else
+                return ownsChannel && channel != null;
+#endif
+            }
+        }
 
         /// <summary>
         /// Whether an event is stored in a scene rather than as a project asset.
         ///
         /// Editor-only knowledge, so it answers false in a build - where the question cannot
-        /// arise, because nothing is authoring anything.
+        /// arise for an arbitrary event, because nothing is authoring anything. A host knows
+        /// about its own event through <see cref="IsSceneStored"/>, in a build too.
         /// </summary>
         public static bool IsSceneEvent(GameEventBase gameEvent)
         {
@@ -153,6 +175,11 @@ namespace LiminalLabs.GameEvents
         /// to the scene, so it would work for the session and be gone on the next load, taking
         /// every reference to it with it. That is a silent failure, so it is refused loudly
         /// instead - the inspector and the wiring tool are the supported ways in.
+        ///
+        /// The event gets its stable id here, on the way in. An asset is minted one when it is
+        /// first inspected, but an event made in code is inspected when someone happens to
+        /// click it, and a save or a bridge that named it before then would have had nothing
+        /// to name it by.
         /// </summary>
         public void Adopt(GameEventBase created)
         {
@@ -166,7 +193,23 @@ namespace LiminalLabs.GameEvents
             }
 
             channel = created;
+            ownsChannel = created != null;
+            if (created != null) created.EnsureStableId();
         }
+
+#if UNITY_EDITOR
+        // Kept true to the asset database whenever the editor looks at this, so a host that
+        // was pointed at a project asset by hand, or one saved before ownership was recorded,
+        // carries the right answer into the next build.
+        private void OnValidate()
+        {
+            bool owns = IsSceneEvent(channel);
+            if (owns == ownsChannel) return;
+
+            ownsChannel = owns;
+            UnityEditor.EditorUtility.SetDirty(this);
+        }
+#endif
 
         private void OnDestroy()
         {

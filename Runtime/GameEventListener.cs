@@ -19,6 +19,13 @@ namespace LiminalLabs.GameEvents
     /// response, wired entirely in the inspector. Subscribes on enable, unsubscribes
     /// on disable — a disabled or destroyed object can never leave a dangling
     /// listener behind.
+    ///
+    /// Each row subscribes with a delegate it builds once and keeps. A method group
+    /// written where a delegate is expected becomes a new delegate every time, so
+    /// subscribing with the method directly costs two allocations per enable/disable
+    /// cycle — on a pooled object, that is every spawn. Keeping the one it subscribed
+    /// with makes enabling and disabling free after the first time, and unsubscribing
+    /// exact: it leaves the event it actually joined, not whatever the field says now.
     /// </summary>
     [AddComponentMenu("Liminal Labs/Game Events/Game Event Listener")]
     public class GameEventListener : MonoBehaviour, IGameEventListenerInfo
@@ -32,7 +39,26 @@ namespace LiminalLabs.GameEvents
             [Tooltip("Invoked whenever the event is raised (while this component is enabled).")]
             public UnityEvent response;
 
-            internal void Invoke() => response.Invoke();
+            private Action handler;
+            private GameEvent subscribedTo;
+
+            internal void Subscribe()
+            {
+                if (gameEvent == null) return;
+
+                subscribedTo = gameEvent;
+                subscribedTo.Subscribe(handler ?? (handler = Invoke));
+            }
+
+            internal void Unsubscribe()
+            {
+                if (subscribedTo == null || handler == null) return;
+
+                subscribedTo.Unsubscribe(handler);
+                subscribedTo = null;
+            }
+
+            private void Invoke() => response?.Invoke();
         }
 
         [SerializeField]
@@ -40,18 +66,12 @@ namespace LiminalLabs.GameEvents
 
         void OnEnable()
         {
-            foreach (Binding binding in bindings)
-            {
-                if (binding?.gameEvent != null) binding.gameEvent.Subscribe(binding.Invoke);
-            }
+            foreach (Binding binding in bindings) binding?.Subscribe();
         }
 
         void OnDisable()
         {
-            foreach (Binding binding in bindings)
-            {
-                if (binding?.gameEvent != null) binding.gameEvent.Unsubscribe(binding.Invoke);
-            }
+            foreach (Binding binding in bindings) binding?.Unsubscribe();
         }
 
         public int GetObservedEvents(List<GameEventBase> results)
@@ -69,7 +89,9 @@ namespace LiminalLabs.GameEvents
 
     /// <summary>
     /// Base for typed listener components: one event, one typed UnityEvent response.
-    /// Concrete types (<see cref="FloatGameEventListener"/>, …) are one-liners.
+    /// Concrete types (<see cref="FloatGameEventListener"/>, …) are one-liners. Like
+    /// <see cref="GameEventListener"/>, it subscribes with one delegate kept for its
+    /// lifetime, so enable and disable allocate nothing.
     /// </summary>
     public abstract class GameEventListener<T, TEvent> : MonoBehaviour, IGameEventListenerInfo
         where TEvent : GameEvent<T>
@@ -80,17 +102,26 @@ namespace LiminalLabs.GameEvents
         [SerializeField, Tooltip("Invoked with the payload whenever the event is raised (while this component is enabled).")]
         private UnityEvent<T> response;
 
+        private Action<T> handler;
+        private TEvent subscribedTo;
+
         void OnEnable()
         {
-            if (gameEvent != null) gameEvent.Subscribe(OnRaised);
+            if (gameEvent == null) return;
+
+            subscribedTo = gameEvent;
+            subscribedTo.Subscribe(handler ?? (handler = OnRaised));
         }
 
         void OnDisable()
         {
-            if (gameEvent != null) gameEvent.Unsubscribe(OnRaised);
+            if (subscribedTo == null || handler == null) return;
+
+            subscribedTo.Unsubscribe(handler);
+            subscribedTo = null;
         }
 
-        private void OnRaised(T value) => response.Invoke(value);
+        private void OnRaised(T value) => response?.Invoke(value);
 
         public int GetObservedEvents(List<GameEventBase> results)
         {
