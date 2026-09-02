@@ -5,6 +5,33 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-09-01
+
+### Added
+
+- **Listener priority.** `Subscribe(listener, priority)` on every event type: higher runs
+  first, equal priorities run in subscription order, and plain `Subscribe` is priority 0. The
+  listener and receiver components carry a `Priority` field. For the one listener that must see
+  an event before the rest - a guard that changes state the others read, an analytics tap - not
+  for ordering everything. A subscription made mid-raise still waits for the next raise however
+  high its priority, so the in-flight raise is never shifted or joined; the Board shows a
+  non-zero priority beside the listener.
+- **`GameEventRegistry`: one place to resolve a stable id.** A `GameEventCatalog` answered for
+  the project's assets and could not know about scene events, which do not exist until their
+  scene loads; a bridge had to collect hosts itself. Now a catalog `Activate()`s into the
+  registry - a `GameEventCatalogActivator` in the bootstrap scene does it with no code - and a
+  `SceneGameEvent` registers its event while its host is enabled. `GameEventRegistry.TryResolve`
+  answers for both, exactly while the event is alive. Two different events with one id is
+  refused with an error naming both; the first keeps answering.
+
+### Tests
+
+- 38 (was 26): priority order across plain and typed events, a mid-raise high-priority
+  subscription waiting for the next raise, add-and-remove within one raise, a guard
+  unsubscribing a later listener, priority in listener descriptions; registry resolution
+  through a catalog, an activator and a scene host, duplicate-id refusal, no-id refusal,
+  `Changed`.
+
 ## [0.5.0] - 2026-09-01
 
 ### Changed

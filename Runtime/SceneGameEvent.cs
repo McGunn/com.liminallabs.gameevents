@@ -31,6 +31,10 @@ namespace LiminalLabs.GameEvents
     /// It also cannot accumulate the classic stale-subscriber bug an asset can. An asset
     /// persists between play sessions and can carry listeners from the last one; this is
     /// rebuilt from the scene every load.
+    ///
+    /// While its host is enabled, a scene event resolves by stable id through
+    /// <see cref="GameEventRegistry"/>, beside the project's catalogued assets - so a bridge
+    /// or a save that names it finds it exactly while the level is loaded.
     /// </summary>
     [AddComponentMenu("Liminal Labs/Game Events/Scene Game Event")]
     [DisallowMultipleComponent]
@@ -53,6 +57,9 @@ namespace LiminalLabs.GameEvents
         // never release one - the runtime half of OnDestroy would be editor-only in practice.
         [SerializeField, HideInInspector]
         private bool ownsChannel;
+
+        // Whether this host registered its event, so it withdraws only what it registered.
+        private bool registered;
 
         /// <summary>The event this hosts. Null until one is created, which the inspector does
         /// on your behalf.</summary>
@@ -210,6 +217,27 @@ namespace LiminalLabs.GameEvents
             UnityEditor.EditorUtility.SetDirty(this);
         }
 #endif
+
+        /// <summary>
+        /// Registers a scene-stored event by its stable id for as long as this host is
+        /// enabled, so the level's own events resolve through <see cref="GameEventRegistry"/>
+        /// exactly while the level is loaded.
+        ///
+        /// A host pointed at a project asset registers nothing. That asset is a catalog's to
+        /// register, and a host withdrawing it on disable would take it away from everyone.
+        /// </summary>
+        private void OnEnable()
+        {
+            registered = channel != null && IsSceneStored && GameEventRegistry.Register(channel);
+        }
+
+        private void OnDisable()
+        {
+            if (!registered) return;
+
+            registered = false;
+            GameEventRegistry.Unregister(channel);
+        }
 
         private void OnDestroy()
         {

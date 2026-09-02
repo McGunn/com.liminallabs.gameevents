@@ -7,7 +7,7 @@ namespace LiminalLabs.GameEvents
     /// <summary>
     /// A payload-less game event: "the door opened", "the wave ended". Raise it from
     /// code, a UnityEvent (button, animation event, timeline signal), or the
-    /// inspector; listen from code via <see cref="Subscribe"/> or with a
+    /// inspector; listen from code via <see cref="Subscribe(Action)"/> or with a
     /// <see cref="GameEventListener"/> component. See <see cref="GameEventBase"/> for
     /// the raise-safety guarantees.
     /// </summary>
@@ -18,9 +18,20 @@ namespace LiminalLabs.GameEvents
 
         public override int ListenerCount => listeners.Count;
 
-        public void Subscribe(Action listener)
+        public void Subscribe(Action listener) => Subscribe(listener, 0);
+
+        /// <summary>
+        /// Subscribes with a priority. Higher runs first; equal priorities run in
+        /// subscription order; plain <see cref="Subscribe(Action)"/> is priority 0.
+        ///
+        /// For the one listener that must see the event before the rest - a guard that
+        /// changes state the others read, an analytics tap - not for ordering everything,
+        /// which is the coupling this package exists to avoid. A subscription made during a
+        /// raise takes effect from the next raise whatever its priority.
+        /// </summary>
+        public void Subscribe(Action listener, int priority)
         {
-            if (listeners.Add(listener))
+            if (listeners.Add(listener, priority, IsRaising))
             {
                 RegisterLive(this);
             }
@@ -65,7 +76,7 @@ namespace LiminalLabs.GameEvents
         {
             for (int i = 0; i < listeners.SnapshotCount; i++)
             {
-                if (listeners[i] != null) results.Add(FormatListener(listeners[i]));
+                if (listeners[i] != null) results.Add(FormatListener(listeners[i], listeners.PriorityAt(i)));
             }
         }
 
@@ -90,9 +101,16 @@ namespace LiminalLabs.GameEvents
         /// <summary>The serialized test payload (used by <see cref="RaiseFromInspector"/>).</summary>
         public T DebugValue => debugValue;
 
-        public void Subscribe(Action<T> listener)
+        public void Subscribe(Action<T> listener) => Subscribe(listener, 0);
+
+        /// <summary>
+        /// Subscribes with a priority. Higher runs first; equal priorities run in
+        /// subscription order; plain <see cref="Subscribe(Action{T})"/> is priority 0. See
+        /// <see cref="GameEvent.Subscribe(Action, int)"/> for when that is worth having.
+        /// </summary>
+        public void Subscribe(Action<T> listener, int priority)
         {
-            if (listeners.Add(listener))
+            if (listeners.Add(listener, priority, IsRaising))
             {
                 RegisterLive(this);
             }
@@ -137,7 +155,7 @@ namespace LiminalLabs.GameEvents
         {
             for (int i = 0; i < listeners.SnapshotCount; i++)
             {
-                if (listeners[i] != null) results.Add(FormatListener(listeners[i]));
+                if (listeners[i] != null) results.Add(FormatListener(listeners[i], listeners.PriorityAt(i)));
             }
         }
 

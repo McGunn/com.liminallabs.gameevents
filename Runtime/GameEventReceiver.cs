@@ -19,11 +19,21 @@ namespace LiminalLabs.GameEvents
         [SerializeField, Tooltip("Event this component reacts to.")]
         private GameEvent gameEvent;
 
+        [SerializeField, Tooltip("Higher runs before other listeners of the same event; equal priorities run in the order they subscribed. Leave at 0 unless this must react before the others do.")]
+        private int priority;
+
         private Action handler;
         private GameEvent subscribedTo;
 
         /// <summary>The observed event (may be null).</summary>
         protected GameEvent Event => gameEvent;
+
+        /// <summary>The priority this subscribes with. Set before enabling to change it.</summary>
+        protected int Priority
+        {
+            get => priority;
+            set => priority = value;
+        }
 
         /// <summary>Override to add enable logic; always call base — it subscribes.</summary>
         protected virtual void OnEnable()
@@ -31,7 +41,7 @@ namespace LiminalLabs.GameEvents
             if (gameEvent == null) return;
 
             subscribedTo = gameEvent;
-            subscribedTo.Subscribe(handler ?? (handler = OnEventRaised));
+            subscribedTo.Subscribe(handler ?? (handler = OnEventRaised), priority);
         }
 
         /// <summary>Override to add disable logic; always call base — it unsubscribes.</summary>
@@ -68,11 +78,21 @@ namespace LiminalLabs.GameEvents
         [SerializeField, Tooltip("Event this component reacts to. May be left empty when something else (e.g. a listener component) drives this component directly.")]
         private TEvent gameEvent;
 
+        [SerializeField, Tooltip("Higher runs before other listeners of the same event; equal priorities run in the order they subscribed. Leave at 0 unless this must react before the others do.")]
+        private int priority;
+
         private Action<T> handler;
         private TEvent subscribedTo;
 
         /// <summary>The observed event (may be null).</summary>
         protected TEvent Event => gameEvent;
+
+        /// <summary>The priority this subscribes with. Set before enabling to change it.</summary>
+        protected int Priority
+        {
+            get => priority;
+            set => priority = value;
+        }
 
         /// <summary>Override to add enable logic; always call base — it subscribes.</summary>
         protected virtual void OnEnable()
@@ -80,7 +100,7 @@ namespace LiminalLabs.GameEvents
             if (gameEvent == null) return;
 
             subscribedTo = gameEvent;
-            subscribedTo.Subscribe(handler ?? (handler = OnEventRaised));
+            subscribedTo.Subscribe(handler ?? (handler = OnEventRaised), priority);
         }
 
         /// <summary>Override to add disable logic; always call base — it unsubscribes.</summary>

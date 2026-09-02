@@ -110,11 +110,15 @@ disk, and reports whether both survived. Worth running again after any Unity upg
 
 These semantics are fixed and pinned by the test suite:
 
-- Listeners fire in **subscription order** — deterministic, always.
+- Listeners fire in **priority order, highest first, and subscription order
+  within a priority** — deterministic, always. Plain `Subscribe` is priority 0;
+  `Subscribe(listener, priority)` and the components' `Priority` field are for
+  the one listener that must see the event before the rest, not for ordering
+  everything.
 - A **throwing listener is isolated**: the exception is logged with the event
   and listener names, and the remaining listeners still fire.
 - **Unsubscribing during a raise** takes effect immediately; **subscribing
-  during a raise** takes effect from the next raise.
+  during a raise** takes effect from the next raise, whatever its priority.
 - **Recursive raises** (a listener chain that re-raises the same event) are
   cut off at depth 8 with an error naming the event — never a stack overflow.
 - Duplicate subscriptions are rejected with a warning. The raise path
@@ -154,17 +158,22 @@ inspector references event assets only.
 Events are a **local-process** message bus by design — raising an event never
 touches the network. Bridging is deliberately easy, though: every event
 carries a **stable id** (a GUID minted at creation, shown in its inspector),
-and a **Game Event Catalog** asset resolves ids back to events at runtime.
+and `GameEventRegistry` resolves ids back to events at runtime — the project's
+assets through a **Game Event Catalog** that has been activated (drop a
+**Game Event Catalog Activator** in the bootstrap scene), and every loaded
+level's scene events through their hosts, which register themselves while
+enabled. One call answers for both, exactly while the event is alive.
 A network bridge is ~20 lines with any netcode:
 
 ```csharp
 // send:    lever.Interacted -> SendToAll(gameEvent.StableId)
-// receive: if (catalog.TryGet(id, out var e)) { remoteRaise = true; ((GameEvent)e).Raise(); remoteRaise = false; }
+// receive: if (GameEventRegistry.TryResolve(id, out var e)) { remoteRaise = true; ((GameEvent)e).Raise(); remoteRaise = false; }
 ```
 
 The `remoteRaise` flag is the one trap: mark remote-originated raises so your
 bridge doesn't re-forward them in a loop. Stable ids also serve save systems
-and analytics; the Setup window flags missing or duplicated ids.
+and analytics; the Setup window flags missing or duplicated ids, and the
+registry refuses a second event with an id it already holds, naming both.
 
 ## Notes
 

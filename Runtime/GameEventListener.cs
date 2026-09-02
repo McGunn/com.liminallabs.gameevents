@@ -42,12 +42,12 @@ namespace LiminalLabs.GameEvents
             private Action handler;
             private GameEvent subscribedTo;
 
-            internal void Subscribe()
+            internal void Subscribe(int priority)
             {
                 if (gameEvent == null) return;
 
                 subscribedTo = gameEvent;
-                subscribedTo.Subscribe(handler ?? (handler = Invoke));
+                subscribedTo.Subscribe(handler ?? (handler = Invoke), priority);
             }
 
             internal void Unsubscribe()
@@ -64,9 +64,12 @@ namespace LiminalLabs.GameEvents
         [SerializeField]
         private List<Binding> bindings = new List<Binding>();
 
+        [SerializeField, Tooltip("Higher runs before other listeners of the same event; equal priorities run in the order they subscribed. Leave at 0 unless this must react before the others do.")]
+        private int priority;
+
         void OnEnable()
         {
-            foreach (Binding binding in bindings) binding?.Subscribe();
+            foreach (Binding binding in bindings) binding?.Subscribe(priority);
         }
 
         void OnDisable()
@@ -102,6 +105,9 @@ namespace LiminalLabs.GameEvents
         [SerializeField, Tooltip("Invoked with the payload whenever the event is raised (while this component is enabled).")]
         private UnityEvent<T> response;
 
+        [SerializeField, Tooltip("Higher runs before other listeners of the same event; equal priorities run in the order they subscribed. Leave at 0 unless this must react before the others do.")]
+        private int priority;
+
         private Action<T> handler;
         private TEvent subscribedTo;
 
@@ -110,7 +116,7 @@ namespace LiminalLabs.GameEvents
             if (gameEvent == null) return;
 
             subscribedTo = gameEvent;
-            subscribedTo.Subscribe(handler ?? (handler = OnRaised));
+            subscribedTo.Subscribe(handler ?? (handler = OnRaised), priority);
         }
 
         void OnDisable()

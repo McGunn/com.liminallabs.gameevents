@@ -11,10 +11,11 @@ namespace LiminalLabs.GameEvents
     /// says "something happened", it is not a variable.
     ///
     /// Raise semantics (fixed by design, pinned by tests):
-    ///   - listeners fire in subscription order,
+    ///   - listeners fire in priority order, highest first, and in subscription order
+    ///     within a priority (plain Subscribe is priority 0),
     ///   - a throwing listener is isolated (logged; the rest still fire),
     ///   - unsubscribing during a raise takes effect immediately,
-    ///   - subscribing during a raise takes effect from the NEXT raise,
+    ///   - subscribing during a raise takes effect from the NEXT raise, whatever the priority,
     ///   - recursive raises are cut off at <see cref="MaxRaiseDepth"/> with an error.
     /// </summary>
     public abstract class GameEventBase : ScriptableObject
@@ -34,8 +35,9 @@ namespace LiminalLabs.GameEvents
         /// <summary>
         /// A GUID minted when the asset is created and never changed — the event's
         /// identity for anything that outlives or leaves this process: network
-        /// bridges, save systems, analytics. Look events up by it at runtime through
-        /// a <see cref="GameEventCatalog"/>.
+        /// bridges, save systems, analytics. Resolve one back to its event at runtime
+        /// through <see cref="GameEventRegistry"/>, which a <see cref="GameEventCatalog"/>
+        /// feeds with the project's assets and a <see cref="SceneGameEvent"/> with its own.
         /// </summary>
         public string StableId => stableId;
 
@@ -122,6 +124,10 @@ namespace LiminalLabs.GameEvents
                 : listener.Method.DeclaringType != null ? listener.Method.DeclaringType.Name : "static";
             return $"{target}.{listener.Method.Name}";
         }
+
+        /// <summary>A listener with its priority, when it has one worth mentioning.</summary>
+        protected static string FormatListener(Delegate listener, int priority) =>
+            priority == 0 ? FormatListener(listener) : $"{FormatListener(listener)}  [priority {priority}]";
 
         // ---- play-session lifetime --------------------------------------------------
         // Event assets outlive play sessions (and survive Enter Play Mode without
